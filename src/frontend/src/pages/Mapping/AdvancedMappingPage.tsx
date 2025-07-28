@@ -15,9 +15,7 @@ import {
   Tabs,
   Tag,
   Popconfirm,
-  Alert,
-  InputNumber,
-  Switch
+  Alert
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -32,7 +30,7 @@ import api from '../../services/api';
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
-const { TabPane } = Tabs;
+// const { TabPane } = Tabs;
 
 interface AdvancedRule {
   id: number;

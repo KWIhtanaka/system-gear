@@ -25,7 +25,7 @@ import { useQuery, useMutation, useQueryClient } from 'react-query';
 import api from '../../services/api';
 import { MappingRule } from '../../types';
 
-const { Title } = Typography;
+// const { Title } = Typography;
 const { Option } = Select;
 const { TextArea } = Input;
 
