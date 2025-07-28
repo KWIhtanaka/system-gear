@@ -20,7 +20,7 @@ import pool from './config/database';
 
 import authRoutes from './routes/auth';
 import productRoutes from './routes/products';
-import mappingRoutes from './routes/mapping';
+import mappingRoutes from './routes/mappingSimple';
 import advancedMappingRoutes from './routes/advancedMapping';
 import importRoutes from './routes/import';
 

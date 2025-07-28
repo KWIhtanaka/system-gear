@@ -40,7 +40,7 @@ router.post('/import',
 
       const importResult = await client.query(
         `INSERT INTO import_management 
-         (supplier, file_name, file_type, status) 
+         (supplier_id, file_name, file_type, status) 
          VALUES ($1, $2, $3, 'uploaded') 
          RETURNING import_no`,
         [supplier, req.file.originalname, fileType]
@@ -93,7 +93,7 @@ router.get('/history', authenticateToken, async (req, res) => {
     let paramIndex = 1;
 
     if (supplier) {
-      whereClause += ` AND supplier = $${paramIndex}`;
+      whereClause += ` AND supplier_id = $${paramIndex}`;
       queryParams.push(supplier);
       paramIndex++;
     }
@@ -116,15 +116,15 @@ router.get('/history', authenticateToken, async (req, res) => {
     const dataQuery = `
       SELECT 
         import_no,
-        supplier,
+        supplier_id as supplier,
         file_name,
         file_type,
-        total_rows,
-        success_rows,
-        error_rows,
+        processed_count as total_rows,
+        processed_count - error_count as success_rows,
+        error_count as error_rows,
         status,
         created_at,
-        completed_at
+        created_at as completed_at
       FROM import_management
       ${whereClause}
       ORDER BY created_at DESC
@@ -280,10 +280,8 @@ router.post('/retry/:import_no',
       await client.query(
         `UPDATE import_management 
          SET status = 'processing', 
-             total_rows = NULL, 
-             success_rows = NULL, 
-             error_rows = NULL, 
-             completed_at = NULL 
+             processed_count = NULL, 
+             error_count = NULL 
          WHERE import_no = $1`,
         [import_no]
       );
@@ -402,7 +400,7 @@ router.get('/statistics', authenticateToken, async (req, res) => {
     let paramIndex = 1;
 
     if (supplier) {
-      whereClause += ` AND supplier = $${paramIndex}`;
+      whereClause += ` AND supplier_id = $${paramIndex}`;
       queryParams.push(supplier);
       paramIndex++;
     }
@@ -414,14 +412,14 @@ router.get('/statistics', authenticateToken, async (req, res) => {
         COUNT(CASE WHEN status = 'completed_with_errors' THEN 1 END) as completed_with_errors,
         COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_imports,
         COUNT(CASE WHEN status = 'processing' THEN 1 END) as processing_imports,
-        COALESCE(SUM(total_rows), 0) as total_rows_processed,
-        COALESCE(SUM(success_rows), 0) as total_success_rows,
-        COALESCE(SUM(error_rows), 0) as total_error_rows,
-        supplier
+        COALESCE(SUM(processed_count), 0) as total_rows_processed,
+        COALESCE(SUM(processed_count - error_count), 0) as total_success_rows,
+        COALESCE(SUM(error_count), 0) as total_error_rows,
+        supplier_id as supplier
       FROM import_management
       ${whereClause}
-      GROUP BY supplier
-      ORDER BY supplier
+      GROUP BY supplier_id
+      ORDER BY supplier_id
     `;
 
     const result = await pool.query(query, queryParams);
@@ -433,9 +431,9 @@ router.get('/statistics', authenticateToken, async (req, res) => {
         COUNT(CASE WHEN status = 'completed_with_errors' THEN 1 END) as completed_with_errors,
         COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_imports,
         COUNT(CASE WHEN status = 'processing' THEN 1 END) as processing_imports,
-        COALESCE(SUM(total_rows), 0) as total_rows_processed,
-        COALESCE(SUM(success_rows), 0) as total_success_rows,
-        COALESCE(SUM(error_rows), 0) as total_error_rows
+        COALESCE(SUM(processed_count), 0) as total_rows_processed,
+        COALESCE(SUM(processed_count - error_count), 0) as total_success_rows,
+        COALESCE(SUM(error_count), 0) as total_error_rows
       FROM import_management
       ${whereClause}
     `;

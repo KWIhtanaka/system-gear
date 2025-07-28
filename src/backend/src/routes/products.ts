@@ -30,7 +30,7 @@ router.get('/',
       let paramIndex = 1;
 
       if (name) {
-        whereClause += ` AND i.display_name ILIKE $${paramIndex}`;
+        whereClause += ` AND i.name ILIKE $${paramIndex}`;
         queryParams.push(`%${name}%`);
         paramIndex++;
       }
@@ -60,17 +60,20 @@ router.get('/',
         SELECT 
           i.item_id,
           i.model,
-          i.display_name as name,
-          i.stock,
-          i.sales_price as price,
+          i.name,
+          COALESCE(ss.stock_qty, 0) as stock,
+          COALESCE(sp.price, 0) as price,
           i.supplier_id as supplier,
-          i.supplier_stock,
-          i.moq,
-          i.spq,
-          i.lead_time,
+          COALESCE(ss.stock_qty, 0) as supplier_stock,
+          COALESCE(spart.moq, 0) as moq,
+          COALESCE(spart.spq, 0) as spq,
+          COALESCE(spart.lead_time, 0) as lead_time,
           i.created_at,
           i.updated_at
         FROM item i
+        LEFT JOIN supplier_stock ss ON i.item_id = ss.item_id AND i.supplier_id = ss.supplier_id
+        LEFT JOIN supplier_price sp ON i.item_id = sp.item_id AND i.supplier_id = sp.supplier_id AND sp.quantity = 1
+        LEFT JOIN supplier_part spart ON i.item_id = spart.item_id AND i.supplier_id = spart.supplier_id
         ${whereClause}
         ORDER BY i.updated_at DESC, i.item_id ASC
         LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
