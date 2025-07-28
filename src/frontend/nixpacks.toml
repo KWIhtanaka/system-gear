@@ -12,3 +12,4 @@ cmd = 'npx serve -s build -l $PORT'
 
 [variables]
 NPM_CONFIG_PRODUCTION = 'false'
+REACT_APP_API_URL = 'https://backend-api-production-808a.up.railway.app/api'

@@ -14,25 +14,15 @@ export interface LoginResponse {
 export const authService = {
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
+      console.log('Attempting login with API:', api.defaults.baseURL);
       const response = await api.post('/auth/login', credentials);
+      console.log('Login response:', response.data);
       return response.data;
-    } catch (error) {
-      // バックエンド接続に失敗した場合、一時的にモック認証を使用
-      if (credentials.username === 'admin' && credentials.password === 'admin123') {
-        return {
-          success: true,
-          data: {
-            token: 'mock-jwt-token-for-demo',
-            user: {
-              id: 1,
-              username: 'admin',
-              email: 'admin@systemgear.com',
-              role: 'admin'
-            }
-          }
-        };
-      }
-      throw new Error('Invalid credentials');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response);
+      // エラーを再スローして、実際のエラーメッセージを表示
+      throw error;
     }
   },
 
