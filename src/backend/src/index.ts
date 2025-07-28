@@ -46,12 +46,17 @@ app.use(helmet({
     preload: true
   }
 }));
+const corsOrigins = [
+  'http://localhost:3001',
+  'https://frontend-production-730e.up.railway.app'
+];
+
+if (process.env.FRONTEND_URL) {
+  corsOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-  origin: [
-    'http://localhost:3001',
-    'https://frontend-production-730e.up.railway.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean),
+  origin: corsOrigins,
   credentials: true,
   optionsSuccessStatus: 200
 }));
