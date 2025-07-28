@@ -1,0 +1,7 @@
+part_number,quantity,price,currency
+ABC-001,100,12.50,JPY
+XYZ-002,250,8.75,JPY
+DEF-003,50,25.00,JPY
+GHI-004,150,15.25,JPY
+JKL-005,75,22.80,JPY
+EOF < /dev/null

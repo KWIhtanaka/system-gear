@@ -1,0 +1,7 @@
+supplier_part_no,stock,unit_price,ccy
+B-PART-001,200,18.00,JPY
+B-PART-002,350,12.30,JPY
+B-PART-003,80,45.50,JPY
+B-PART-004,120,28.90,JPY
+B-PART-005,60,38.75,JPY
+EOF < /dev/null

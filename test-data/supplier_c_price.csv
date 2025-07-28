@@ -1,0 +1,6 @@
+part_number,maker_name,unit_price,currency,quantity
+PART-A001,メーカーA,1200,JPY,1
+PART-A002,メーカーA,1800,JPY,1
+PART-A003,メーカーA,2500,JPY,1
+PART-A004,メーカーA,3200,JPY,1
+PART-A005,メーカーA,1950,JPY,1

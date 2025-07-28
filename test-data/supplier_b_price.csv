@@ -1,0 +1,5 @@
+model_no,manufacturer,price_yen,currency,min_qty
+MODEL-B001,メーカーB,2200,JPY,1
+MODEL-B002,メーカーB,3500,JPY,1
+MODEL-B003,メーカーB,1750,JPY,1
+MODEL-B004,メーカーB,4200,JPY,1
