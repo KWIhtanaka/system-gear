@@ -49,19 +49,27 @@ export class AdvancedMappingService {
     
     try {
       const result = await client.query(`
-        INSERT INTO advanced_mapping_rules 
-        (supplier, rule_name, rule_type, source_field, target_field, conditions, priority, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
+        INSERT INTO mapping_rules 
+        (supplier_id, rule_name, conditions, mapping, is_active)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING 
+          rule_id as id,
+          supplier_id as supplier,
+          rule_name,
+          'value_mapping' as rule_type,
+          $6 as source_field,
+          $7 as target_field,
+          conditions,
+          1 as priority,
+          is_active
       `, [
         supplier,
         ruleName,
-        'value_mapping',
+        JSON.stringify({ source_field: sourceField, target_field: targetField }),
+        JSON.stringify({ mappings }),
+        true,
         sourceField,
-        targetField,
-        JSON.stringify(mappings),
-        1,
-        true
+        targetField
       ]);
       
       return result.rows[0];
@@ -80,18 +88,24 @@ export class AdvancedMappingService {
     
     try {
       const result = await client.query(`
-        INSERT INTO advanced_mapping_rules 
-        (supplier, rule_name, rule_type, source_field, target_field, conditions, priority, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
+        INSERT INTO mapping_rules 
+        (supplier_id, rule_name, conditions, mapping, is_active)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING 
+          rule_id as id,
+          supplier_id as supplier,
+          rule_name,
+          'conditional_skip' as rule_type,
+          '' as source_field,
+          '' as target_field,
+          conditions,
+          1 as priority,
+          is_active
       `, [
         supplier,
         ruleName,
-        'conditional_skip',
-        '',
-        '',
-        JSON.stringify(conditions),
-        1,
+        JSON.stringify({ type: 'conditional_skip' }),
+        JSON.stringify({ conditions }),
         true
       ]);
       
@@ -173,12 +187,28 @@ export class AdvancedMappingService {
     
     try {
       const result = await client.query(`
-        SELECT * FROM advanced_mapping_rules 
-        WHERE supplier = $1 AND is_active = true
-        ORDER BY priority ASC, created_at ASC
+        SELECT 
+          rule_id as id,
+          supplier_id as supplier,
+          rule_name,
+          CASE 
+            WHEN conditions->>'source_field' IS NOT NULL THEN 'value_mapping'
+            ELSE 'conditional_skip'
+          END as rule_type,
+          COALESCE(conditions->>'source_field', '') as source_field,
+          COALESCE(conditions->>'target_field', '') as target_field,
+          COALESCE(mapping->'mappings', '[]'::jsonb) as conditions,
+          1 as priority,
+          is_active
+        FROM mapping_rules 
+        WHERE supplier_id = $1 AND is_active = true
+        ORDER BY created_at ASC
       `, [supplier]);
       
-      return result.rows;
+      return result.rows.map(row => ({
+        ...row,
+        conditions: typeof row.conditions === 'string' ? JSON.parse(row.conditions) : row.conditions
+      }));
     } finally {
       client.release();
     }
